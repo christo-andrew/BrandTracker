@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/white"
+    android:layout_marginBottom="5dp"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:layout_marginBottom="5dp"
+        android:padding="16dp">
+        <ImageView
+            android:layout_height="50dp"
+            android:layout_width="50dp"
+            android:id="@+id/pub_icon"
+            android:src="@drawable/pub"
+            >
+        </ImageView>
+
+        <TextView
+            android:id="@+id/pub_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/pub_icon"
+            android:textColor="#000"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginStart="86dp"
+            android:layout_marginLeft="86dp"
+            android:layout_marginTop="2dp"
+            android:text="Monot Bar And Lounge"
+            android:textSize="19sp" />
+
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/pub_name"
+            android:layout_alignBottom="@+id/pub_icon"
+            android:textStyle="normal"
+            android:text="Bukoto - Kampala" />
+
+    </RelativeLayout>
+
+</android.support.design.card.MaterialCardView>
