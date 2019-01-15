@@ -10,16 +10,16 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.iconasystems.christoandrew.brandtracker.R;
-import com.iconasystems.christoandrew.brandtracker.models.Bar;
+import com.iconasystems.christoandrew.brandtracker.models.Place;
 
 import java.util.List;
 
 
 public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder> {
     private OnItemClickListener onItemClickListener;
-    private final List<Bar> mValues;
+    private final List<Place> mValues;
 
-    public PlacesAdapter(List<Bar> items, OnItemClickListener onItemClickListener) {
+    public PlacesAdapter(List<Place> items, OnItemClickListener onItemClickListener) {
         mValues = items;
         this.onItemClickListener = onItemClickListener;
     }
@@ -61,13 +61,13 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
             mLocation.setTypeface(fontMedium);
         }
 
-        void bind(final Bar bar, final OnItemClickListener onItemClickListener) {
-            mPubName.setText(bar.getName());
-            mLocation.setText(bar.getLocation());
+        void bind(final Place place, final OnItemClickListener onItemClickListener) {
+            mPubName.setText(place.getName());
+            mLocation.setText(place.getLocation());
             this.view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onItemClickListener.onItemClick(bar);
+                    onItemClickListener.onItemClick(place);
                 }
             });
 
@@ -75,6 +75,6 @@ public class PlacesAdapter extends RecyclerView.Adapter<PlacesAdapter.ViewHolder
     }
 
     public interface OnItemClickListener {
-        void onItemClick(Bar bar);
+        void onItemClick(Place place);
     }
 }

@@ -2,6 +2,7 @@ package com.iconasystems.christoandrew.brandtracker;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +11,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -22,7 +22,12 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.iconasystems.christoandrew.brandtracker.adapters.PlacesAdapter;
-import com.iconasystems.christoandrew.brandtracker.models.Bar;
+import com.iconasystems.christoandrew.brandtracker.api.ApiClient;
+import com.iconasystems.christoandrew.brandtracker.api.ApiService;
+import com.iconasystems.christoandrew.brandtracker.network.AuthInterceptor;
+import com.iconasystems.christoandrew.brandtracker.models.Place;
+import com.iconasystems.christoandrew.brandtracker.viewmodel.PlaceViewModel;
+import com.iconasystems.christoandrew.brandtracker.viewmodel.TokenViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +37,13 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private ViewPager mViewPager;
-    List<Bar> bars = new ArrayList<>();
+    List<Place> places = new ArrayList<>();
     boolean isCheckedIn = false;
+    private TokenViewModel tokenViewModel;
+    private PlaceViewModel placeViewModel;
+    private ApiService apiService;
+    private AuthInterceptor authInterceptor = null;
+    private List<Place> dbPlaces = new ArrayList<Place>();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -43,35 +52,47 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if(getIntent().getStringExtra("is_checked_in") != null){
+        placeViewModel = ViewModelProviders.of(this).get(PlaceViewModel.class);
+
+        tokenViewModel = ViewModelProviders.of(this).get(TokenViewModel.class);
+        if (getIntent().getStringExtra("is_checked_in") != null) {
             isCheckedIn = Boolean.parseBoolean(getIntent().getStringExtra("is_checked_in"));
             Log.d(TAG, "Is Checked In ? ".concat(getIntent().getStringExtra("is_checked_in")));
         }
 
+        authInterceptor = new AuthInterceptor(tokenViewModel.getToken().getToken());
+        apiService = ApiClient.getClient(authInterceptor).create(ApiService.class);
 
         View recyclerView = findViewById(R.id.bar_list);
         assert recyclerView != null;
         setupRecyclerView((RecyclerView) recyclerView);
 
-        bars.add(new Bar(1, "Monot Bar & Lounge", "Bugolobi-Kampala"));
-        bars.add(new Bar(2, "Fame Lounge", "Kololo-Kampala"));
-        bars.add(new Bar(3, "The Wave", "Kololo-Kampala"));
-        bars.add(new Bar(4, "Bugatti Bar", "Ntinda-Kampala"));
-        bars.add(new Bar(5, "The Place Bar", "Mengo-Kampala"));
-        bars.add(new Bar(6, "Alchemist", "Bugolobi-Kampala"));
-        bars.add(new Bar(7, "Mad hatters", "Bugolobi-Kampala"));
-        bars.add(new Bar(8, "Kyandondo Rugby Club", "Kyadondo-Kampala"));
-        bars.add(new Bar(9, "Liquid Silk", "Bugolobi-Kampala"));
-        bars.add(new Bar(10, "Casablanca Bar & Lounge", "Kololo-Kampala"));
-        bars.add(new Bar(11, "Sky Lounge", "Kololo-Kampala"));
-        bars.add(new Bar(12, "Club Amnesia", "Nakasero-Kampala"));
+        try{
+            dbPlaces = placeViewModel.getPlaces();
+        }catch (Exception ex){
+            Log.e(TAG, " Error => "+ ex.getMessage());
+        }
+
+
+        places.add(new Place(1, "Monot Place & Lounge", "Bugolobi-Kampala"));
+        places.add(new Place(2, "Fame Lounge", "Kololo-Kampala"));
+        places.add(new Place(3, "The Wave", "Kololo-Kampala"));
+        places.add(new Place(4, "Bugatti Place", "Ntinda-Kampala"));
+        places.add(new Place(5, "The Place Place", "Mengo-Kampala"));
+        places.add(new Place(6, "Alchemist", "Bugolobi-Kampala"));
+        places.add(new Place(7, "Mad hatters", "Bugolobi-Kampala"));
+        places.add(new Place(8, "Kyandondo Rugby Club", "Kyadondo-Kampala"));
+        places.add(new Place(9, "Liquid Silk", "Bugolobi-Kampala"));
+        places.add(new Place(10, "Casablanca Place & Lounge", "Kololo-Kampala"));
+        places.add(new Place(11, "Sky Lounge", "Kololo-Kampala"));
+        places.add(new Place(12, "Club Amnesia", "Nakasero-Kampala"));
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               showDialog();
+                showDialog();
             }
         });
 
@@ -138,20 +159,21 @@ public class MainActivity extends AppCompatActivity
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         PlacesAdapter.OnItemClickListener onItemClickListener = null;
-        if (!isCheckedIn){
-            onItemClickListener = new PlacesAdapter.OnItemClickListener(){
+        if (!isCheckedIn) {
+            onItemClickListener = new PlacesAdapter.OnItemClickListener() {
 
                 @Override
-                public void onItemClick(Bar bar) {
+                public void onItemClick(Place place) {
                     Intent checkIn = new Intent(getApplicationContext(), Checkin.class);
-                    checkIn.putExtra("bar", bar.getName());
+                    checkIn.putExtra("place", place.getName());
                     startActivity(checkIn);
                 }
             };
 
         }
-        recyclerView.setAdapter(new PlacesAdapter(this.bars, onItemClickListener));
+        recyclerView.setAdapter(new PlacesAdapter(this.places, onItemClickListener));
     }
+
     public static class CheckoutDialogFragment extends DialogFragment {
 
         public static CheckoutDialogFragment newInstance() {
@@ -189,6 +211,5 @@ public class MainActivity extends AppCompatActivity
         DialogFragment newFragment = CheckoutDialogFragment.newInstance();
         newFragment.show(getSupportFragmentManager(), "dialog");
     }
-
 
 }
